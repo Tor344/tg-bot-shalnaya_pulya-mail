@@ -25,4 +25,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     repo = UserRepository(session)
     login, password = message.text.split(":")
+    if not await repo.is_mail(login=login,password=password):
+       await message.answer("Почта не найдена")
+       return 
     await message.answer(f"login:{login}, password:{password}")
