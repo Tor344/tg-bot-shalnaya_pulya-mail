@@ -1,18 +1,31 @@
 from sqladmin import ModelView
-from bot.database.models import User, Firstmail # <-- твоя модель
+from bot.database.models import User, Mail,MailType # <-- твоя модель
 
+    
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.telegram_id]
     column_telegram_id= [User.telegram_id]
 
 
-class MailFirstmail(ModelView, model=Firstmail):
-    # Правильно указываем столбцы для списка
-    column_list = [Firstmail.id, Firstmail.login, Firstmail.password]
+class MailAdmin(ModelView, model=Mail):
+    column_list = [Mail.id, Mail.name_mail, Mail.login, Mail.password]
+    column_searchable_list = [Mail.login]
+    column_sortable_list = [Mail.id, Mail.login]
     
-    # Настраиваем поля для поиска
-    column_searchable_list = [Firstmail.login]
+    # Форматируем Enum для красивого отображения
+    column_formatters = {
+        Mail.name_mail: lambda m, a: m.name_mail.value
+    }
     
-    # Настраиваем сортировку
-    column_sortable_list = [Firstmail.id, Firstmail.login]
+    column_formatters_detail = {
+        Mail.name_mail: lambda m, a: m.name_mail.value
+    }
+    
+    # Для удобства в форме можно добавить описание
+    form_choices = {
+        'name_mail': [
+            (MailType.FIRSTMAIL.value, 'First Mail Service'),
+            (MailType.NOTLETTERS.value, 'Not Letters Service')
+        ]
+    }
     

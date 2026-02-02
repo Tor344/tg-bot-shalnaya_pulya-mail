@@ -29,3 +29,6 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
        await message.answer("Почта не найдена")
        return 
     await message.answer(f"login:{login}, password:{password}")
+
+
+
