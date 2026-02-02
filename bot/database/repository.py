@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from .models import User, Mail
+from .models import User, Mail,BlockUser
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
@@ -42,3 +42,15 @@ class UserRepository:
         mail_type = result.scalar_one_or_none()
         
         return mail_type
+    
+    async def is_user_block(self,id:int) -> bool:
+        query = select(BlockUser).where(
+        BlockUser.telegram_id == id
+    )
+    
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        blocked_user = result.scalar_one_or_none()
+        
+        # Если найдена запись - пользователь заблокирован
+        return blocked_user is not None

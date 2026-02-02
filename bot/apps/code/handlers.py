@@ -18,6 +18,10 @@ router = Router()
 @router.message(Command("code"))
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     repo = UserRepository(session)
+    if await repo.is_user_block(message.from_user.id):
+        await message.answer("Вы заблокированны")
+        return
+    
     await state.set_state(Code.set_mail_data)
     await message.answer("Отправьте аккаунт в формате login или login:pass")
 
@@ -25,7 +29,9 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
 @router.message(Code.set_mail_data)
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     repo = UserRepository(session)
-    
+    if await repo.is_user_block(message.from_user.id):
+        await message.answer("Вы заблокированны")
+        return
     login, password = message.text.split(":")
     
     if not await repo.is_mail(login=login,password=password):
