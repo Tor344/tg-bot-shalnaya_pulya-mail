@@ -30,3 +30,15 @@ class UserRepository:
         
         # Если запись найдена и пароль совпадает
         return mail is not None
+    
+    async def get_type_mail(self,login:str, password:str):
+        query = select(Mail.name_mail).where(
+        Mail.login == login,
+        Mail.password == password
+        )
+        
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        mail_type = result.scalar_one_or_none()
+        
+        return mail_type

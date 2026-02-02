@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import bot.core.keyboards as keyboards_core
+import bot.core.api as api
 from bot.apps.code import keyboards as keyboards_code
 from bot.apps.code.state_fms import *
 
@@ -24,11 +25,25 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
 @router.message(Code.set_mail_data)
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     repo = UserRepository(session)
+    
     login, password = message.text.split(":")
+    
     if not await repo.is_mail(login=login,password=password):
        await message.answer("Почта не найдена")
        return 
-    await message.answer(f"login:{login}, password:{password}")
-
+    
+    if  await repo.get_type_mail(login=login,password=password) == "firstmail":
+        codes = api.request_humaniml(login=login,password=password)
+    else:
+        codes = api.request_notletters(login=login,password=password)
+    
+    if codes == None:
+        await message.answer("Произошла ошибка")
+        await state.clear()
+            
+    text = result = ', '.join(str(code) for code in codes)
+    
+    await message.answer(text)
+    await state.clear()
 
 
