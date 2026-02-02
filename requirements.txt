@@ -7,4 +7,3 @@ sqladmin
 itsdangerous
 fastapi[standard]
 click
-aiosqlite
