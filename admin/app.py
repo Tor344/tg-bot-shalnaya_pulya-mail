@@ -6,7 +6,7 @@ from sqladmin import Admin
 from bot.database.session import engine, SessionMaker  # например
 
 from admin.auth import AdminAuth
-from admin.views import UserAdmin  # добавь свои ModelView
+from admin.views import UserAdmin, MailAdmin  # добавь свои ModelView
 
 
 def create_admin_app() -> FastAPI:
@@ -23,6 +23,7 @@ def create_admin_app() -> FastAPI:
 
     # регистрируешь модели
     admin.add_view(UserAdmin)
+    admin.add_view(MailAdmin)
 
     return app
 

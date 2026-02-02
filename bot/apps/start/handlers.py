@@ -21,4 +21,7 @@ async def start(message: Message, session: AsyncSession):
     if not user:
         await repo.create(message.from_user.id)
 
-    await message.answer("start")
+    await message.answer("""Привет! Я выдаю коды от YA
+
+Команды:
+    /code - получить код""")

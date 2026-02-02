@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from .models import User
+from .models import User, Mail
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
@@ -17,3 +17,16 @@ class UserRepository:
         self.session.add(user)
         await self.session.commit()
         return user
+    
+    async def is_mail(self,login:str, password:str):
+        query = select(Mail).where(
+            Mail.login == login,
+            Mail.password == password
+        )
+        
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        mail = result.scalar_one_or_none()
+        
+        # Если запись найдена и пароль совпадает
+        return mail is not None
