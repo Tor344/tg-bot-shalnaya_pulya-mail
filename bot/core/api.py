@@ -16,13 +16,13 @@ async def request_humaniml(login: str, password: str) -> Optional[List[str]]:
             API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
             
             headers = {
-                "X-API-KEY": API_KEY
+                "X-API-KEY": API_KEY,
+                "Accept-Charset": "utf-8, iso-8859-1, windows-1251, *"
             }
 
             json_data = {
                 "email": login,
                 "password": password,
-                "limit": 10,
                 "folder": "INBOX"
             }
             
@@ -51,8 +51,8 @@ async def request_humaniml(login: str, password: str) -> Optional[List[str]]:
                         if match:
                             code = match.group()
                             result.append(code)
-                            
-                    return result if result else None
+                    print(result)
+                    return result 
         
     except aiohttp.ClientError as e:
         print(f"HTTP client error: {e}")
@@ -117,7 +117,7 @@ async def request_notletters(login: str, password: str,) :
                             code = match.group()
                             result.append(code)
                     
-                    return result if result else None
+                    return result 
                     
     except aiohttp.ClientError as e:
         print(f"HTTP client error: {e}")
