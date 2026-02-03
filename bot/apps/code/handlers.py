@@ -43,15 +43,20 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             return 
         print(await repo.get_type_mail(login=login,password=password) )
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
-            codes = await api.request_humaniml(login=login,password=password)
+            print("hello word")
+            codes =  api.request_humaniml(login=login,password=password)
+            print(codes)
+            code = codes[-1]
+
         else:
             codes = await api.request_notletters(login=login,password=password)
+            code = codes[0]
         if codes == []:
             await message.answer("На почте нет писем")
             return 
-        text = result = ', '.join(str(code) for code in codes)
+        # text = result = ', '.join(str(code) for code in codes)
 
-        await message.answer(f"Ваш код: <code>{codes[0]}</code>",parse_mode=ParseMode.HTML)
+        await message.answer(f"Ваш код: <code>{code}</code>",parse_mode=ParseMode.HTML)
         await state.clear()
         
         

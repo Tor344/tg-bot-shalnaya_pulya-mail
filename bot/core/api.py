@@ -7,59 +7,127 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from bot.database.repository import UserRepository
 from bot.database.session import *
+import html  # Добавляем импорт html модуля
+from email.header import decode_header
+import requests
+import html  # Добавляем импорт html модуля
+from email.header import decode_header
 
-async def request_humaniml(login: str, password: str) -> Optional[List[str]]:
+def decode_mime_header(header):
+    """Декодирует MIME-encoded заголовки (например, subject, from)"""
+    if header is None:
+        return ""
+    
+    decoded_parts = decode_header(header)
+    result = []
+    
+    for content, encoding in decoded_parts:
+        if isinstance(content, bytes):
+            if encoding:
+                try:
+                    content = content.decode(encoding)
+                except:
+                    content = content.decode('utf-8', errors='ignore')
+            else:
+                content = content.decode('utf-8', errors='ignore')
+        result.append(content)
+    
+    return ''.join(result)
+
+def decode_html_text(html_text):
+    """Декодирует HTML текст с Unicode escape последовательностями"""
+    if not html_text:
+        return ""
+    
+    # Сначала пробуем декодировать Unicode escape (\u0417 и т.д.)
     try:
-        async with SessionMaker() as session:
-            repo = UserRepository(session)
+        decoded = html_text.encode('utf-8').decode('unicode_escape')
+    except:
+        decoded = html_text
+    
+    # Если есть MIME encoded части (quoted-printable)
+    if '=?utf-8?q?' in decoded or '=?UTF-8?Q?' in decoded or '=?utf-8?b?' in decoded or '=?UTF-8?B?' in decoded:
+        try:
+            # Декодируем MIME части
+            decoded = decode_mime_header(decoded)
+        except:
+            pass
+    
+    return decoded
 
-            API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
-            
-            headers = {
-                "X-API-KEY": API_KEY,
-                "Accept-Charset": "utf-8, iso-8859-1, windows-1251, *"
-            }
+def extract_text_from_html(html_text):
+    """Извлекает текст из HTML, убирая теги"""
+    if not html_text:
+        return ""
+    
+    # Упрощенное удаление HTML тегов
+    text = re.sub(r'<[^>]+>', ' ', html_text)
+    # Заменяем множественные пробелы на один
+    text = re.sub(r'\s+', ' ', text)
+    # Декодируем HTML entities
+    text = html.unescape(text)
+    return text.strip()
 
-            json_data = {
-                "email": login,
-                "password": password,
-                "folder": "INBOX"
-            }
-            
-            MAIN_URL = "https://firstmail.ltd/api/v1/"
-            url = MAIN_URL + "email/messages"
-            
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, headers=headers, json=json_data) as response:
-                    response_text = await response.text()
-                    print(response_text)
-                    
-                    if response.status != 200:
-                        print(f"Status code: {response.status}")
-                        return None
-                    
-                    request_json = await response.json()
-                    messages = request_json.get("data", {}).get("messages", [])
-                    
-                    result = []
-                    pattern = re.compile(r'\b\d{4,8}\b')
-                    
-                    for message in messages:
-                        text = message.get("body_text", "")
-                        match = pattern.search(text)
-                        
-                        if match:
-                            code = match.group()
-                            result.append(code)
-                    print(result)
-                    return result 
+
+def  request_humaniml(login,password):
+    API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
+    print("hello")
+    headers = {
+        "X-API-KEY": API_KEY,
+        "Accept-Charset": "utf-8, iso-8859-1, windows-1251, *"
+    }
+    # rodneyanderson1976@tracheobronmail.ru:yhanxqowY!1919
+    json ={
+        "email": login,
+        "password": password,
+        "folder": "INBOX"
+        }
         
-    except aiohttp.ClientError as e:
-        print(f"HTTP client error: {e}")
-        return None
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return None
+    MAIN_URL = "https://firstmail.ltd/api/v1/"
+
+    request = requests.post(url=MAIN_URL + "email/messages",headers=headers, json=json)
+    request_json = request.json()
+    messages = request_json.get("data").get("messages")
+    pattern = r":\s*\d{4,6}\s*"
+    result = []
+    for message in messages:
+        text = message.get("body_text", "")
+        if not text:
+            text = message.get("body_html", "")
+        
+        if text:
+            # Декодируем текст
+            decoded_text = decode_html_text(text)
+            
+            # Если это HTML, извлекаем текст
+            if "<html>" in decoded_text.lower() or "<!doctype" in decoded_text.lower():
+                clean_text = extract_text_from_html(decoded_text) 
+                # Ищем код в очищенном тексте
+                match = re.search(r'\b\d{4,8}\b', clean_text)
+            else:
+                print(f"\nText content:\n{decoded_text[:1000]}...")
+                match = re.search(r'\b\d{4,8}\b', decoded_text)
+            
+            if match:
+                code = match.group()
+                print(f"\n✅ Found code: {code}")
+                result.append(code)
+
+            else:
+                print("\n❌ No code found")
+        else:
+            print("\nNo text content found")
+
+
+
+        # match = re.search(r'\b\d{4,8}\b', s)
+
+        if match:
+            code = match.group()
+            print(code)
+    print(result)
+    return result
+
 
 
 async def request_notletters(login: str, password: str,) :
