@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select,func
-from .models import User, Mail,BlockUser,MailType
+from .models import User, Mail,BlockUser,MailType,Api
+
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
@@ -119,3 +120,10 @@ class UserRepository:
         await self.session.commit()
 
         return len(new_mails)
+    
+    async def get_api(self,id:str):
+        query = select(Api.api_token).where(Api.id == id)
+        result = await self.session.execute(query)
+        token = result.scalar_one_or_none()
+
+        return token
