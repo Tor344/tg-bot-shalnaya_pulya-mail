@@ -50,6 +50,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         await message.answer(f"Ваш код:{codes[0]}")
         await state.clear()
         
+        
     except BaseException as e:
         await message.answer("""Произошла ошибка или неверно введенные данные.
 Попробуйте еще раз, используя /code""")
