@@ -44,6 +44,9 @@ class UserRepository:
         result = await self.session.execute(query)
         mail_type = result.scalar_one_or_none()
         
+        if mail_type and isinstance(mail_type, MailType):
+            return mail_type.value  # Вернет "firstmail" или "notletters"
+    
         return mail_type
     
 

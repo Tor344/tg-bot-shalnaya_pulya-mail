@@ -39,7 +39,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             await message.answer("Почта не найдена")
             await state.clear()
             return 
-
+        print(await repo.get_type_mail(login=login,password=password) )
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
             codes = await api.request_humaniml(login=login,password=password)
         else:

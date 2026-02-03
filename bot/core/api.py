@@ -85,7 +85,6 @@ async def request_notletters(login: str, password: str,) :
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, headers=headers, json=json_data) as response:
                     print(f"Status code: {response.status}")
-                    
                     if response.status != 200:
                         print(f"Request failed with status: {response.status}")
                         return None
