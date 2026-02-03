@@ -27,7 +27,7 @@ async def request_humaniml(login: str, password: str) -> Optional[List[str]]:
             }
             
             MAIN_URL = "https://firstmail.ltd/api/v1/"
-            url = MAIN_URL + "email/messages/latest"
+            url = MAIN_URL + "email/messages"
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, headers=headers, json=json_data) as response:
