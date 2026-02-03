@@ -35,7 +35,10 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         if await repo.is_user_block(message.from_user.id):
             await message.answer("Вы заблокированны")
             return
-        login, password = message.text.split(":")
+        text = message.text
+        result = text.replace(" ", "")
+
+        login, password = result.split(":")
 
         if not await repo.is_mail(login=login,password=password):
             await message.answer("Почта не найдена,попорбуйте еще раз ч")
