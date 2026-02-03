@@ -13,3 +13,4 @@ class DbSessionMiddleware(BaseMiddleware):
         async with SessionMaker() as session:
             data["session"] = session
             return await handler(event, data)
+

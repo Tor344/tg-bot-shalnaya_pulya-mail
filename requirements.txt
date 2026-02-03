@@ -7,3 +7,4 @@ sqladmin
 itsdangerous
 fastapi[standard]
 click
+aiohttp

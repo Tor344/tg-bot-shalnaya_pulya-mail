@@ -1,10 +1,14 @@
 from sqladmin import ModelView
-from bot.database.models import User, Mail,MailType # <-- твоя модель
+from bot.database.models import User, Mail,MailType, BlockUser,Api # <-- твоя модель
 
     
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.telegram_id]
     column_telegram_id= [User.telegram_id]
+
+class BlockUserAdmin(ModelView, model=BlockUser):
+    column_list = [BlockUser.id, BlockUser.telegram_id]
+    column_telegram_id= [BlockUser.telegram_id]
 
 
 class MailAdmin(ModelView, model=Mail):
@@ -29,3 +33,9 @@ class MailAdmin(ModelView, model=Mail):
         ]
     }
     
+
+class ApiAdmin(ModelView, model=Api):
+    column_list = [Api.id, Api.api_token]
+    column_telegram_id= [Api.api_token]
+
+    form_include_pk = True

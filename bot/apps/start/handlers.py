@@ -16,7 +16,10 @@ router = Router()
 @router.message(Command("start"))
 async def start(message: Message, session: AsyncSession):
     repo = UserRepository(session)
-
+    if await repo.is_user_block(message.from_user.id):
+        await message.answer("Вы заблокированны")
+        return
+    
     user = await repo.get_by_telegram_id(message.from_user.id)
     if not user:
         await repo.create(message.from_user.id)
@@ -25,3 +28,8 @@ async def start(message: Message, session: AsyncSession):
 
 Команды:
     /code - получить код""")
+
+
+@router.message()
+async def start(message: Message, session: AsyncSession):
+    await message.answer("Команда неопознана")

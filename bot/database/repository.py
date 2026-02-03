@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from .models import User, Mail
+from sqlalchemy import select,func
+from .models import User, Mail,BlockUser,MailType,Api
+
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
@@ -18,6 +19,7 @@ class UserRepository:
         await self.session.commit()
         return user
     
+
     async def is_mail(self,login:str, password:str):
         query = select(Mail).where(
             Mail.login == login,
@@ -30,3 +32,98 @@ class UserRepository:
         
         # Если запись найдена и пароль совпадает
         return mail is not None
+    
+    
+    async def get_type_mail(self,login:str, password:str):
+        query = select(Mail.name_mail).where(
+        Mail.login == login,
+        Mail.password == password
+        )
+        
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        mail_type = result.scalar_one_or_none()
+        
+        return mail_type
+    
+
+    async def is_user_block(self,id:int) -> bool:
+        query = select(BlockUser).where(
+        BlockUser.telegram_id == id
+    )
+    
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        blocked_user = result.scalar_one_or_none()
+        
+        # Если найдена запись - пользователь заблокирован
+        return blocked_user is not None
+    
+    
+    async def get_count_user(self):
+        query = select(func.count()).select_from(User)
+    
+        # Выполняем запрос
+        result = await self.session.execute(query)
+        count = result.scalar_one()
+        
+        return count
+    
+
+    async def set_mails_firstmail(self, mails: list[list[str]]) -> int:
+        if not mails:
+            return 0
+
+        logins = [login for login, _ in mails]
+
+        query = select(Mail.login).where(Mail.login.in_(logins))
+        result = await self.session.execute(query)
+        existing_logins = set(result.scalars().all())
+
+        new_mails = [
+            Mail(
+                login=login,
+                password=password,
+                name_mail=MailType.FIRSTMAIL
+            )
+            for login, password in mails
+            if login not in existing_logins
+        ]
+
+        self.session.add_all(new_mails)
+        await self.session.commit()
+
+        return len(new_mails)
+
+
+    async def set_mails_notletters(self, mails: list[list[str]]) -> int:
+        if not mails:
+            return 0
+
+        logins = [login for login, _ in mails]
+
+        query = select(Mail.login).where(Mail.login.in_(logins))
+        result = await self.session.execute(query)
+        existing_logins = set(result.scalars().all())
+
+        new_mails = [
+            Mail(
+                login=login,
+                password=password,
+                name_mail=MailType.NOTLETTERS
+            )
+            for login, password in mails
+            if login not in existing_logins
+        ]
+
+        self.session.add_all(new_mails)
+        await self.session.commit()
+
+        return len(new_mails)
+    
+    async def get_api(self,id:str):
+        query = select(Api.api_token).where(Api.id == id)
+        result = await self.session.execute(query)
+        token = result.scalar_one_or_none()
+
+        return token

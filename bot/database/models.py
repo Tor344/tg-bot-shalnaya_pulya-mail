@@ -15,6 +15,12 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
 
+class BlockUser(Base):
+    __tablename__ = "blockuser"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+
 class Mail(Base):
     __tablename__ = "firstmail" 
     
@@ -27,3 +33,9 @@ class Mail(Base):
 
     login: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password: Mapped[str] = mapped_column(String(255)) 
+
+class Api(Base):
+    __tablename__ = "aoi"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    api_token: Mapped[str] = mapped_column(String, unique=True, index=True)
