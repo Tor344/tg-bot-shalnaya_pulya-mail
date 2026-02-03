@@ -2,6 +2,7 @@ import asyncio
 import sys
 import logging
 
+from bot.apps.admin.handlers import router as admin_router
 from bot.apps.code.handlers import router as code_router
 from aiogram import Bot, Dispatcher
 
@@ -28,8 +29,11 @@ dp = Dispatcher()
 
 dp.update.middleware(DbSessionMiddleware())
 
-dp.include_router(start_router)
+
 dp.include_router(code_router)
+dp.include_router(admin_router)
+dp.include_router(start_router)
+
 
 async def init_db():
     async with engine.begin() as conn:

@@ -28,3 +28,8 @@ async def start(message: Message, session: AsyncSession):
 
 Команды:
     /code - получить код""")
+
+
+@router.message()
+async def start(message: Message, session: AsyncSession):
+    await message.answer("Команда неопознана")

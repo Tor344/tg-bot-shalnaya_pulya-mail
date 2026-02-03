@@ -36,6 +36,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
     
     if not await repo.is_mail(login=login,password=password):
        await message.answer("Почта не найдена")
+       await state.clear()
        return 
     
     if  await repo.get_type_mail(login=login,password=password) == "firstmail":
