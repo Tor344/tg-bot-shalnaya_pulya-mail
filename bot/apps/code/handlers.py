@@ -3,6 +3,8 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.enums import ParseMode
+
 
 import bot.core.keyboards as keyboards_core
 import bot.core.api as api
@@ -47,7 +49,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
                 
         text = result = ', '.join(str(code) for code in codes)
 
-        await message.answer(f"Ваш код:{codes[0]}")
+        await message.answer(f"Ваш код: <code>{codes[0]}</code>",parse_mode=ParseMode.HTML)
         await state.clear()
         
         
