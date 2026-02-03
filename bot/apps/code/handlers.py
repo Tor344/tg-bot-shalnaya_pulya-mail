@@ -38,7 +38,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         login, password = message.text.split(":")
 
         if not await repo.is_mail(login=login,password=password):
-            await message.answer("Почта не найдена")
+            await message.answer("Почта не найдена,попорбуйте еще раз ч")
             await state.clear()
             return 
         print(await repo.get_type_mail(login=login,password=password) )
@@ -46,7 +46,9 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             codes = await api.request_humaniml(login=login,password=password)
         else:
             codes = await api.request_notletters(login=login,password=password)
-                
+        if codes == []:
+            await message.answer("На почте нет писем")
+            return 
         text = result = ', '.join(str(code) for code in codes)
 
         await message.answer(f"Ваш код: <code>{codes[0]}</code>",parse_mode=ParseMode.HTML)
