@@ -23,7 +23,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         return
     
     await state.set_state(Code.set_mail_data)
-    await message.answer("Отправьте аккаунт в формате login или login:pass")
+    await message.answer("Отправьте аккаунт в формате login:pass")
 
 
 @router.message(Code.set_mail_data)
@@ -44,16 +44,14 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             codes = await api.request_humaniml(login=login,password=password)
         else:
             codes = await api.request_notletters(login=login,password=password)
-
-        if codes == None:
-            await message.answer("Произошла ошибка")
-            await state.clear()
                 
         text = result = ', '.join(str(code) for code in codes)
 
-        await message.answer(text)
+        await message.answer(f"Ваш код:{codes[0]}")
         await state.clear()
         
     except BaseException as e:
-        await message.answer("Неверно введенные данные")
+        await message.answer("""Произошла ошибка или неверно введенные данные.
+Попробуйте еще раз, используя /code""")
+        await state.clear()
 

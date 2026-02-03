@@ -10,4 +10,5 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
+          password: ${{ secrets.PASSWORD }}
           script: sudo systemctl stop ${GITHUB_REPOSITORY##*/}
