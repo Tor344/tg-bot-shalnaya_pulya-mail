@@ -49,22 +49,22 @@ async def admin(call: CallbackQuery, session: AsyncSession,state:FSMContext):
                               ,reply_markup=keyboards_admin.cancel_keyboard)
     
 
-@router.callback_query(F.data.document, Admin.get_file)
+@router.message(F.document, Admin.get_file)
 async def admin(
-    call: CallbackQuery,
+    message: Message,
     session: AsyncSession,
     state: FSMContext
 ):
     repo = UserRepository(session)
-    data = state.get_data() 
-    name_mails = data.get(name_mail)
-    document = call.message.document
+    data = await state.get_data() 
+    name_mails = data.get("name_mail")
+    document = message.document
 
-    file = await call.bot.get_file(document.file_id)
+    file = await message.bot.get_file(document.file_id)
 
     # скачиваем файл в память
     buffer = BytesIO()
-    await call.bot.download_file(file.file_path, buffer)
+    await message.bot.download_file(file.file_path, buffer)
 
     buffer.seek(0)
 
@@ -84,7 +84,7 @@ async def admin(
     else:
         await repo.set_mails_notletters(result)
     
-    await call.message.answer(
+    await message.answer(
         f"Готово ✅\nАккаунтов: {len(result)}"
     )
     await state.clear()
