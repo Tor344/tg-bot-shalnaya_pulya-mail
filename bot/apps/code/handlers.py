@@ -1,3 +1,5 @@
+import asyncio
+import random
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
@@ -44,15 +46,23 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             await message.answer("Почта не найдена,попорбуйте еще раз ч")
             await state.clear()
             return 
-        print(await repo.get_type_mail(login=login,password=password) )
+        await message.answer("Ищу код 60 секунд")
+        await asyncio.sleep(random.randint(30,120))
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
-            print("hello word")
-            codes =  api.request_humaniml(login=login,password=password)
-            print(codes)
-            code = codes[-1]
 
+            codes,is_time =  api.request_humaniml(login=login,password=password)
+            print("iuyt")
+            if is_time == False:
+                await message.answer("не нашел код, попробуйте отправить снова")
+                return
+            code = codes[-1]
+        
         else:
-            codes = await api.request_notletters(login=login,password=password)
+            codes, is_time = await api.request_notletters(login=login,password=password)
+            if is_time == False:
+                await message.answer("не нашел код, попробуйте отправить снова")
+                return
+            
             code = codes[0]
         if codes == []:
             await message.answer("На почте нет писем")

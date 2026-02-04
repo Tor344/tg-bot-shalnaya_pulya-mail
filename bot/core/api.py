@@ -2,6 +2,8 @@ import aiohttp
 import asyncio
 import re
 from typing import Optional, List
+import time
+import datetime
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +14,7 @@ from email.header import decode_header
 import requests
 import html  # Добавляем импорт html модуля
 from email.header import decode_header
+
 
 def decode_mime_header(header):
     """Декодирует MIME-encoded заголовки (например, subject, from)"""
@@ -71,10 +74,8 @@ def extract_text_from_html(html_text):
 
 def  request_humaniml(login,password):
     API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
-    print("hello")
     headers = {
         "X-API-KEY": API_KEY,
-        "Accept-Charset": "utf-8, iso-8859-1, windows-1251, *"
     }
     # rodneyanderson1976@tracheobronmail.ru:yhanxqowY!1919
     json ={
@@ -84,17 +85,19 @@ def  request_humaniml(login,password):
         }
         
     MAIN_URL = "https://firstmail.ltd/api/v1/"
+    request = requests.post(url=MAIN_URL + "email/messages/latest",headers=headers, json=json)
+    print(request.content.decode('windows-1251', errors='ignore'))
 
-    request = requests.post(url=MAIN_URL + "email/messages",headers=headers, json=json)
     request_json = request.json()
+    print(request.text)
     messages = request_json.get("data").get("messages")
     pattern = r":\s*\d{4,6}\s*"
     result = []
+    
     for message in messages:
         text = message.get("body_text", "")
         if not text:
             text = message.get("body_html", "")
-        
         if text:
             # Декодируем текст
             decoded_text = decode_html_text(text)
@@ -125,10 +128,35 @@ def  request_humaniml(login,password):
         if match:
             code = match.group()
             print(code)
-    print(result)
-    return result
+    
+    # print(is_time_close(messages[-1].get("date")))
+    return result, True#is_time_close(messages[-1].get("date"))
+
+from datetime import datetime, timedelta, timezone
+
+def is_time_close(date_str):
+    target_utc = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+
+    # переводим в московское время (+4 часа)
+    moscow_tz = timezone(timedelta(hours=4))
+    target_moscow = target_utc.astimezone(moscow_tz)
+
+    # текущее время в Москве
+    now_moscow = datetime.now(moscow_tz)
+
+    # разница в секундах
+    diff_seconds = abs((now_moscow - target_moscow).total_seconds())
+
+    return diff_seconds < 60
 
 
+# # пример использования
+# if is_time_close():
+#     print("Время совпадает (меньше 60 секунд)")
+# else:
+#     print("Разница больше минуты")
+
+    
 
 async def request_notletters(login: str, password: str,) :
     try:
@@ -149,7 +177,7 @@ async def request_notletters(login: str, password: str,) :
             
             MAIN_URL = "https://api.notletters.com/v1/"
             url = MAIN_URL + "letters"
-
+            
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, headers=headers, json=json_data) as response:
                     print(f"Status code: {response.status}")
@@ -158,7 +186,7 @@ async def request_notletters(login: str, password: str,) :
                         return None
                     
                     request_json = await response.json()
-                    
+
                     # Безопасное извлечение данных с проверками
                     data = request_json.get("data")
                     if not data:
@@ -177,15 +205,16 @@ async def request_notletters(login: str, password: str,) :
                         letter_data = letter.get("letter")
                         if not letter_data:
                             continue
-                            
+                        
                         text = letter_data.get("text", "")
                         
                         match = pattern.search(text)
                         if match:
                             code = match.group()
                             result.append(code)
-                    
-                    return result 
+                    # timestamp = data['data']['letters'][0]['date']
+                    print(is_within_60_seconds(request_json))
+                    return result , is_within_60_seconds(request_json)
                     
     except aiohttp.ClientError as e:
         print(f"HTTP client error: {e}")
@@ -196,7 +225,44 @@ async def request_notletters(login: str, password: str,) :
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
-if __name__ == "__main__":
-    result = asyncio.run(request_notletters("burrell16516@tiebreakermail.ru", 'JEimH2oSLVhx'))
-    print(result)
-        # harrietroth2006@parietosplml.ru:rjzqzfovS!6749
+    
+
+
+
+
+
+def is_within_60_seconds(timestamp_data):
+    """
+    Проверяет, прошло ли менее 60 секунд с момента получения времени.
+    
+    Args:
+        timestamp_data: Словарь с данными письма, содержащий timestamp в поле 'date'
+        
+    Returns:
+        bool: True если разница менее 60 секунд, иначе False
+    """
+    try:
+        # Получаем текущее время в формате Unix timestamp
+        current_time = time.time()
+        
+        # Извлекаем timestamp из данных
+        # В вашем случае timestamp находится по пути: data -> letters -> [0] -> date
+        letter_timestamp = timestamp_data['data']['letters'][0]['date']
+        
+        # Вычисляем разницу в секундах
+        time_difference = abs(current_time - letter_timestamp)
+        
+        # Проверяем, меньше ли разница 60 секунд
+        return time_difference < 180
+        
+    except (KeyError, IndexError, TypeError) as e:
+        print(f"Ошибка при обработке данных: {e}")
+        return False
+
+
+# print(is_recent_letter(json_data))
+
+# if __name__ == "__main__":
+#     result = asyncio.run(request_notletters("burrell16516@tiebreakermail.ru", 'JEimH2oSLVhx'))
+#     print(result)
+#         # harrietroth2006@parietosplml.ru:rjzqzfovS!6749
