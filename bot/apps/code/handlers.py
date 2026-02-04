@@ -46,7 +46,6 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             await message.answer("Почта не найдена,попорбуйте еще раз ч")
             await state.clear()
             return 
-        await message.answer("Ищу код 60 секунд")
         await asyncio.sleep(random.randint(30,120))
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
 
@@ -58,12 +57,20 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             code = codes[-1]
         
         else:
-            codes, is_time = await api.request_notletters(login=login,password=password)
-            if is_time == False:
+            for i in range(0, 5):
+                codes, is_time = await api.request_notletters(login=login, password=password)
+                
+                if is_time == True:
+                    code = codes[0]
+                    continue  # Пропускаем остаток итерации, если is_time == True
+                
+                # Если is_time != True, продолжаем выполнение
+                await asyncio.sleep(5)
+            else:
+                # Этот блок выполнится ТОЛЬКО если цикл завершился НЕ через break
                 await message.answer("не нашел код, попробуйте отправить снова")
                 return
-            
-            code = codes[0]
+                    
         if codes == []:
             await message.answer("На почте нет писем")
             return 
@@ -74,7 +81,5 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         
         
     except BaseException as e:
-        await message.answer("""Произошла ошибка или неверно введенные данные.
-Попробуйте еще раз, используя /code""")
         await state.clear()
 
