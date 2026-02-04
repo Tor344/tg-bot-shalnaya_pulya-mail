@@ -41,14 +41,16 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             await message.answer("Вы заблокированны")
             return
         text = message.text
+        
         email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     
         # Находим все совпадения
-        login = re.findall(email_pattern, text)[0]
-        if not login:
+        login = re.findall(email_pattern, text)
+        if login == []:
             await message.answer("Неверный формат аккаунта. Попробуйте еще раз через /code")
             await state.clear()
-
+            
+        login = re.findall(email_pattern, text)[0]
         if not await repo.is_mail(login=login):
             await message.answer("Почта не найдена,попорбуйте еще раз через /code")
             await state.clear()
