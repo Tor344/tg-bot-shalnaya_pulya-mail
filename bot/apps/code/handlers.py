@@ -15,12 +15,14 @@ from bot.apps.code.state_fms import *
 
 from bot.database.repository import UserRepository
 
-
+import config.settings  
 router = Router()
 
 
 @router.message(Command("code"))
 async def code(message: Message, state: FSMContext, session: AsyncSession):
+    if config.settings.spot:
+        return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
         await message.answer("Вы заблокированны")
@@ -39,18 +41,16 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             return
         text = message.text
         result = text.replace(" ", "")
-
         login, password = result.split(":")
 
         if not await repo.is_mail(login=login,password=password):
             await message.answer("Почта не найдена,попорбуйте еще раз ч")
             await state.clear()
             return 
-        await asyncio.sleep(random.randint(30,120))
+        await message.answer("Ищу код 60 секунд")
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
 
             codes,is_time =  api.request_humaniml(login=login,password=password)
-            print("iuyt")
             if is_time == False:
                 await message.answer("не нашел код, попробуйте отправить снова")
                 return
@@ -62,7 +62,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
                 
                 if is_time == True:
                     code = codes[0]
-                    continue  # Пропускаем остаток итерации, если is_time == True
+                    break  # Пропускаем остаток итерации, если is_time == True
                 
                 # Если is_time != True, продолжаем выполнение
                 await asyncio.sleep(5)

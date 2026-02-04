@@ -9,12 +9,14 @@ from bot.apps.start.state_fms import *
 
 from bot.database.repository import UserRepository
 
-
+import config.settings 
 router = Router()
 
 
 @router.message(Command("start"))
 async def start(message: Message, session: AsyncSession):
+    if config.settings.spot:
+        return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
         await message.answer("Вы заблокированны")

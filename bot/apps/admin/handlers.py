@@ -14,18 +14,33 @@ from bot.apps.admin.state_fms import *
 
 from bot.database.repository import UserRepository
 
+
+import config.settings 
 router = Router()
 
 
 @router.message(Command("admin"))
-async def admin(message: Message, session: AsyncSession):
+async def admin(message: Message, session: AsyncSession,state:FSMContext):
     repo = UserRepository(session)
+    await state.clear()
     await message.answer("""Админ панель
 
 /count - количество пользователей 
-/addmails - отправка файла с почтами""")
+/addmails - отправка файла с почтами
+/pause - бот поставлен на пазу
+/pauseoff бот снят с паузы               
+                         """)
 
 
+@router.message(Command("pause"))
+async def admin(message: Message, session: AsyncSession):
+    config.settings.spot = 1
+    await message.answer("Бот остановлен")
+
+@router.message(Command("pauseoff"))
+async def admin(message: Message, session: AsyncSession):
+    config.settings.spot = 0
+    await message.answer("Бот запущен")
 
 @router.message(Command("count"))
 async def admin(message: Message, session: AsyncSession):
