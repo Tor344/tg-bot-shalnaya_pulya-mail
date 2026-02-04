@@ -20,10 +20,9 @@ class UserRepository:
         return user
     
 
-    async def is_mail(self,login:str, password:str):
+    async def is_mail(self,login:str):
         query = select(Mail).where(
-            Mail.login == login,
-            Mail.password == password
+            Mail.login == login
         )
         
         # Выполняем запрос
@@ -130,3 +129,11 @@ class UserRepository:
         token = result.scalar_one_or_none()
 
         return token
+    
+    async def get_password_by_login(self, login: str) -> str | None:
+
+        # Запрос для получения пароля по логину
+        query = select(Mail.password).where(Mail.login == login)
+        result = await self.session.execute(query)
+        password = result.scalar_one_or_none()
+        return password

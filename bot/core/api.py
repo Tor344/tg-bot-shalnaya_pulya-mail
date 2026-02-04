@@ -73,54 +73,56 @@ def extract_text_from_html(html_text):
 
 
 def  request_humaniml(login,password):
-    API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
-    headers = {
-        "X-API-KEY": API_KEY,
-    }
-    # rodneyanderson1976@tracheobronmail.ru:yhanxqowY!1919
-    json ={
-        "email": login,
-        "password": password,
-        "folder": "INBOX"
+    try:
+        API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
+        headers = {
+            "X-API-KEY": API_KEY,
         }
+        # rodneyanderson1976@tracheobronmail.ru:yhanxqowY!1919
+        json ={
+            "email": login,
+            "password": password,
+            "folder": "INBOX"
+            }
+            
+        MAIN_URL = "https://firstmail.ltd/api/v1/"
+        request = requests.post(url=MAIN_URL + "email/messages/latest",headers=headers, json=json)
+        print(request.text)
+        request_json = request.json()
+
+        messages = request_json.get("data").get("messages")
+        pattern = r":\s*\d{4,6}\s*"
+        result = []
         
-    MAIN_URL = "https://firstmail.ltd/api/v1/"
-    request = requests.post(url=MAIN_URL + "email/messages/latest",headers=headers, json=json)
-    print(request.content.decode('windows-1251', errors='ignore'))
+        for message in messages:
+            text = message.get("body_text", "")
+            if not text:
+                text = message.get("body_html", "")
+            if text:
+                # Декодируем текст
+                decoded_text = decode_html_text(text)
+                
+                # Если это HTML, извлекаем текст
+                if "<html>" in decoded_text.lower() or "<!doctype" in decoded_text.lower():
+                    clean_text = extract_text_from_html(decoded_text) 
+                    # Ищем код в очищенном тексте
+                    match = re.search(r'\b\d{4,8}\b', clean_text)
+                else:
+                    print(f"\nText content:\n{decoded_text[:1000]}...")
+                    match = re.search(r'\b\d{4,8}\b', decoded_text)
+                
+                if match:
+                    code = match.group()
+                    print(f"\n✅ Found code: {code}")
+                    result.append(code)
 
-    request_json = request.json()
-    print(request.text)
-    messages = request_json.get("data").get("messages")
-    pattern = r":\s*\d{4,6}\s*"
-    result = []
-    
-    for message in messages:
-        text = message.get("body_text", "")
-        if not text:
-            text = message.get("body_html", "")
-        if text:
-            # Декодируем текст
-            decoded_text = decode_html_text(text)
-            
-            # Если это HTML, извлекаем текст
-            if "<html>" in decoded_text.lower() or "<!doctype" in decoded_text.lower():
-                clean_text = extract_text_from_html(decoded_text) 
-                # Ищем код в очищенном тексте
-                match = re.search(r'\b\d{4,8}\b', clean_text)
+                else:
+                    print("\n❌ No code found")
             else:
-                print(f"\nText content:\n{decoded_text[:1000]}...")
-                match = re.search(r'\b\d{4,8}\b', decoded_text)
-            
-            if match:
-                code = match.group()
-                print(f"\n✅ Found code: {code}")
-                result.append(code)
-
-            else:
-                print("\n❌ No code found")
-        else:
-            print("\nNo text content found")
-
+                print("\nNo text content found")
+    except BaseException as e:
+        print(f"ошибка: {e}")
+        return None, None
 
 
         # match = re.search(r'\b\d{4,8}\b', s)

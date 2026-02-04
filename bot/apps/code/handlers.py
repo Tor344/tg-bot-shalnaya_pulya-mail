@@ -1,3 +1,4 @@
+import re
 import asyncio
 import random
 from aiogram import Router, F
@@ -29,7 +30,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         return
     
     await state.set_state(Code.set_mail_data)
-    await message.answer("Отправьте аккаунт в формате login:pass")
+    await message.answer("Отправьте аккаунт в формате login или login:pass")
 
 
 @router.message(Code.set_mail_data)
@@ -40,24 +41,41 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             await message.answer("Вы заблокированны")
             return
         text = message.text
-        result = text.replace(" ", "")
-        login, password = result.split(":")
+        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    
+        # Находим все совпадения
+        login = re.findall(email_pattern, text)[0]
+        if not login:
+            await message.answer("Неверный формат аккаунта. Попробуйте еще раз через /code")
+            await state.clear()
 
-        if not await repo.is_mail(login=login,password=password):
-            await message.answer("Почта не найдена,попорбуйте еще раз ч")
+        if not await repo.is_mail(login=login):
+            await message.answer("Почта не найдена,попорбуйте еще раз через /code")
             await state.clear()
             return 
+        password = await repo.get_password_by_login(login=login)
+        print(password)
         await message.answer("Ищу код 60 секунд")
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
-
-            codes,is_time =  api.request_humaniml(login=login,password=password)
-            if is_time == False:
+            for i in range(0, 12):
+                codes,is_time =  api.request_humaniml(login=login,password=password)
+                if codes == None and is_time ==None:
+                    await message.answer("Проблема с сервисом")
+                    await state.clear()
+                    return
+                if is_time == True:
+                    code = codes[0]
+                    break  # Пропускаем остаток итерации, если is_time == True
+                await asyncio.sleep(5)
+                
+            else:
+                # Этот блок выполнится ТОЛЬКО если цикл завершился НЕ через break
                 await message.answer("не нашел код, попробуйте отправить снова")
                 return
-            code = codes[-1]
-        
+            
         else:
-            for i in range(0, 5):
+            for i in range(0, 12):
+
                 codes, is_time = await api.request_notletters(login=login, password=password)
                 
                 if is_time == True:
