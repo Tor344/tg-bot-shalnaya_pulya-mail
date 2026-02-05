@@ -67,7 +67,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
                     await state.clear()
                     return
                 if is_time == True:
-                    code = codes[0]
+                    code = codes[-1]
                     break  # Пропускаем остаток итерации, если is_time == True
                 await asyncio.sleep(5)
                 

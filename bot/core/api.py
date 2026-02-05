@@ -74,20 +74,23 @@ def extract_text_from_html(html_text):
 
 def  request_humaniml(login,password):
     try:
-        API_KEY = '8jhmLxCs28q-g4Zxx-e5xgz0kvU-RLL3sf2S6wAMGAzQhhM317HOT5ouTsNUYaQP'
+        url = "https://firstmail.ltd/api/v1/email/messages"
+
         headers = {
-            "X-API-KEY": API_KEY,
+            "X-API-KEY": "0YabzqwUwPY76IJqGxyeWkqkESzC_8EvVUxzFsSYasX0gLy20eVKooy64rGQQdRs",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "*/*"
         }
-        # rodneyanderson1976@tracheobronmail.ru:yhanxqowY!1919
-        json ={
+
+        data = {
             "email": login,
             "password": password,
+            "limit": 10,
             "folder": "INBOX"
-            }
-            
-        MAIN_URL = "https://firstmail.ltd/api/v1/"
-        request = requests.post(url=MAIN_URL + "email/messages/latest",headers=headers, json=json)
-        print(request.text)
+        }
+
+        # Для отправки JSON используйте:
+        request = requests.post(url, headers=headers, json=data)
         request_json = request.json()
 
         messages = request_json.get("data").get("messages")
@@ -130,9 +133,9 @@ def  request_humaniml(login,password):
         if match:
             code = match.group()
             print(code)
-    
+    print(result)
     # print(is_time_close(messages[-1].get("date")))
-    return result, True#is_time_close(messages[-1].get("date"))
+    return result, is_time_close(messages[-1].get("date"))
 
 from datetime import datetime, timedelta, timezone
 
