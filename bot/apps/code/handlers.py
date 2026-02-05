@@ -23,6 +23,7 @@ router = Router()
 @router.message(Command("code"))
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     if config.settings.spot:
+        await message.answer("Бот на паузе, попробуйте позже")
         return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):

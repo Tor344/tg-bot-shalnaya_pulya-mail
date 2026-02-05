@@ -16,6 +16,7 @@ router = Router()
 @router.message(Command("start"))
 async def start(message: Message, session: AsyncSession):
     if config.settings.spot:
+        await message.answer("Бот на паузе, попробуйте позже")
         return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
@@ -34,4 +35,6 @@ async def start(message: Message, session: AsyncSession):
 
 @router.message()
 async def start(message: Message, session: AsyncSession):
-    await message.answer("Команда неопознана")
+    if config.settings.spot:
+        await message.answer("Бот на паузе, попробуйте позже")
+        return
