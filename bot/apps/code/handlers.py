@@ -103,7 +103,6 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         
         
     except BaseException as e:
-        await message.answer("Произошла ошибка")
         await state.clear()
     
     finally:
