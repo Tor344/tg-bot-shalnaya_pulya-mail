@@ -91,12 +91,14 @@ def  request_humaniml(login,password):
 
         # Для отправки JSON используйте:
         request = requests.post(url, headers=headers, json=data)
+        print(request.text)
         request_json = request.json()
 
         messages = request_json.get("data").get("messages")
         pattern = r":\s*\d{4,6}\s*"
         result = []
-        
+        if messages == []:
+            return 0, 0
         for message in messages:
             text = message.get("body_text", "")
             if not text:

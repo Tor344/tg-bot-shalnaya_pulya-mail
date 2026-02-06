@@ -62,6 +62,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
             for i in range(0, 12):
                 codes,is_time =  api.request_humaniml(login=login,password=password)
+                print(codes, is_time)
                 if codes == None and is_time ==None:
                     await message.answer("Проблема с сервисом")
                     await state.clear()
@@ -80,7 +81,6 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             for i in range(0, 12):
 
                 codes, is_time = await api.request_notletters(login=login, password=password)
-                
                 if is_time == True:
                     code = codes[0]
                     break  # Пропускаем остаток итерации, если is_time == True
@@ -103,6 +103,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         
         
     except BaseException as e:
+        await message.answer("Произошла ошибка")
         await state.clear()
     
     finally:
