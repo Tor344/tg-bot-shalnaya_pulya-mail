@@ -90,6 +90,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
             else:
                 # Этот блок выполнится ТОЛЬКО если цикл завершился НЕ через break
                 await message.answer("не нашел код, попробуйте отправить снова")
+                await state.clear()
                 return
                     
         if codes == []:
@@ -103,4 +104,6 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         
     except BaseException as e:
         await state.clear()
-
+    
+    finally:
+        await state.clear()

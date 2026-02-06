@@ -133,7 +133,7 @@ def  request_humaniml(login,password):
         if match:
             code = match.group()
             print(code)
-    print(result)
+    print(result,is_time_close(messages[-1].get("date")))
     # print(is_time_close(messages[-1].get("date")))
     return result, is_time_close(messages[-1].get("date"))
 
