@@ -38,3 +38,4 @@ async def start(message: Message, session: AsyncSession):
     if config.settings.spot:
         await message.answer("Бот на паузе, попробуйте позже")
         return
+    await message.answer("К сожалению я не смог распознать Вашу команду. Воспользуйтесь /code или отправьте /start")
