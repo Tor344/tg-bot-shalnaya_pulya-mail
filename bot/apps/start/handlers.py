@@ -18,6 +18,9 @@ async def start(message: Message, session: AsyncSession):
     if config.settings.spot:
         await message.answer("Бот на паузе, попробуйте позже")
         return
+    if config.settings.spot ==2:
+        await message.answer("Бот в процессе поиска кода")
+        return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
         await message.answer("Вы заблокированны")
@@ -31,6 +34,7 @@ async def start(message: Message, session: AsyncSession):
 
 Команды:
     /code - получить код""")
+    
 
 
 @router.message()
@@ -38,4 +42,7 @@ async def start(message: Message, session: AsyncSession):
     if config.settings.spot:
         await message.answer("Бот на паузе, попробуйте позже")
         return
+    if config.settings.spot ==2:
+        await message.answer("Бот в процессе поиска кода")
+        return  
     await message.answer("К сожалению я не смог распознать Вашу команду. Воспользуйтесь /code или отправьте /start")

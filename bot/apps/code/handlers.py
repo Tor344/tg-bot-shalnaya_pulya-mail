@@ -25,6 +25,8 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
     if config.settings.spot:
         await message.answer("Бот на паузе, попробуйте позже")
         return
+    if config.settings.spot ==2:
+        return
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
         await message.answer("Вы заблокированны")
@@ -37,6 +39,9 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
 @router.message(Code.set_mail_data)
 async def code(message: Message, state: FSMContext, session: AsyncSession):
     repo = UserRepository(session)
+    if config.settings.spot ==2:
+        await message.answer("Бот в процессе поиска кода")
+        return
     try:
         if await repo.is_user_block(message.from_user.id):
             await message.answer("Вы заблокированны")
@@ -62,6 +67,8 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         if  await repo.get_type_mail(login=login,password=password) == "firstmail":
             for i in range(0, 12):
                 codes,is_time =  api.request_humaniml(login=login,password=password)
+                
+                config.settings.spot = 2
                 print(codes, is_time)
                 if codes == None and is_time ==None:
                     await message.answer("Проблема с сервисом")
@@ -107,3 +114,4 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
     
     finally:
         await state.clear()
+        config.settings.spot = 0
