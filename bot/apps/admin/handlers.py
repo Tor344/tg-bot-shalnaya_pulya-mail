@@ -16,11 +16,15 @@ from bot.database.repository import UserRepository
 
 
 import config.settings 
+
+
 router = Router()
 
 
 @router.message(Command("admin"))
 async def admin(message: Message, session: AsyncSession,state:FSMContext):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     repo = UserRepository(session)
     await state.clear()
     await message.answer("""Админ панель
@@ -34,28 +38,38 @@ async def admin(message: Message, session: AsyncSession,state:FSMContext):
 
 @router.message(Command("pause"))
 async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     config.settings.spot = 1
     await message.answer("Бот остановлен")
 
 @router.message(Command("pauseoff"))
 async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     config.settings.spot = 0
     await message.answer("Бот запущен")
 
 @router.message(Command("count"))
 async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     repo = UserRepository(session)
     await message.answer(f"Количество пользователей: {await repo.get_count_user()}")
 
 
 @router.message(Command("addmails"))
 async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     repo = UserRepository(session)
     await message.answer(f"Выберите вид почты",reply_markup=keyboards_admin.main_name_keyboard)
 
 
 @router.callback_query(F.data.in_({"firstmail","notletters"}))
 async def admin(call: CallbackQuery, session: AsyncSession,state:FSMContext):
+    if call.from_user.id not in  config.settings.admin_ids:
+        return
     repo = UserRepository(session)
     await state.update_data(name_mail=call.data)
     await state.set_state(Admin.get_file)
@@ -107,6 +121,8 @@ async def admin(
 
 @router.callback_query(F.data=="cancel")
 async def admin(call: CallbackQuery, session: AsyncSession,state:FSMContext):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
     repo = UserRepository(session)
     await state.clear()
     await call.message.answer("Добавление почт отменин")
