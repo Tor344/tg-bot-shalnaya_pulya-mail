@@ -10,6 +10,8 @@ from bot.apps.start.state_fms import *
 from bot.database.repository import UserRepository
 
 import config.settings 
+
+
 router = Router()
 
 
@@ -27,6 +29,8 @@ async def start(message: Message, session: AsyncSession):
     user = await repo.get_by_telegram_id(message.from_user.id)
     if not user:
         await repo.create(message.from_user.id)
+        for admin in config.settings.admin_ids:
+            await message.bot.send_message(chat_id=admin,text=f"Новый пользователь: {message.from_user.username}({message.from_user.id})")
 
     await message.answer("""Привет! Я выдаю коды от YA
 

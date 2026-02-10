@@ -121,9 +121,10 @@ async def admin(
 
 @router.callback_query(F.data=="cancel")
 async def admin(call: CallbackQuery, session: AsyncSession,state:FSMContext):
-    if message.from_user.id not in  config.settings.admin_ids:
+    if call.from_user.id not in  config.settings.admin_ids:
         return
+    await call.message.delete()
     repo = UserRepository(session)
     await state.clear()
-    await call.message.answer("Добавление почт отменин")
+    await call.message.answer("Добавление почт отменен")
     
