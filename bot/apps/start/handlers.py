@@ -39,7 +39,8 @@ async def start(message: Message, session: AsyncSession):
         
         for admin in config.settings.admin_ids:
             print(admin)
-            await message.bot.send_message(chat_id=admin,text=f"Новый пользователь: @{message.from_user.username}({message.from_user.id})")
+            name = "@" + message.from_user.username if message.from_user.username != None else  message.from_user.full_name
+            await message.bot.send_message(chat_id=admin,text=f"Новый пользователь: {name}({message.from_user.id})")
     if config.settings.status_mail == 0:
             
         await message.answer("""Привет! Я выдаю коды от YA
