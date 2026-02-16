@@ -25,6 +25,11 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
     if config.settings.spot:
         await message.answer("Бот на паузе, попробуйте позже")
         return
+    
+    if config.settings.status_mail == 1:
+        await message.answer("К сожалению я не смог распознать Вашу команду")
+        return    
+    
     repo = UserRepository(session)
     if await repo.is_user_block(message.from_user.id):
         await message.answer("Вы заблокированны")
@@ -111,4 +116,4 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
     
     finally:
         await state.clear()
-        config.settings.spot = 0
+

@@ -32,7 +32,9 @@ async def admin(message: Message, session: AsyncSession,state:FSMContext):
 /count - количество пользователей 
 /addmails - отправка файла с почтами
 /pause - бот поставлен на пазу
-/pauseoff бот снят с паузы               
+/pauseoff бот снят с паузы
+/sendforcode - прием почт через команду /code
+/sendfortext - прием почт по любому коду /code                                         
                          """)
 
 
@@ -49,6 +51,22 @@ async def admin(message: Message, session: AsyncSession):
         return
     config.settings.spot = 0
     await message.answer("Бот запущен")
+
+
+@router.message(Command("sendforcode"))
+async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
+    config.settings.status_mail = 0
+    await message.answer("Бот остановлен")
+
+@router.message(Command("sendfortext"))
+async def admin(message: Message, session: AsyncSession):
+    if message.from_user.id not in  config.settings.admin_ids:
+        return
+    config.settings.status_mail = 1
+    await message.answer("Бот запущен")
+
 
 @router.message(Command("count"))
 async def admin(message: Message, session: AsyncSession):
