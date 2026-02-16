@@ -58,14 +58,14 @@ async def admin(message: Message, session: AsyncSession):
     if message.from_user.id not in  config.settings.admin_ids:
         return
     config.settings.status_mail = 0
-    await message.answer("Бот остановлен")
+    await message.answer("Бот в режиме прием почт через команду /code")
 
 @router.message(Command("sendfortext"))
 async def admin(message: Message, session: AsyncSession):
     if message.from_user.id not in  config.settings.admin_ids:
         return
     config.settings.status_mail = 1
-    await message.answer("Бот запущен")
+    await message.answer("Бот в режиме прием почт через текст")
 
 
 @router.message(Command("count"))
