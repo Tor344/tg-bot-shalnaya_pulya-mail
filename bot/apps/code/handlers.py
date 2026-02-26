@@ -27,7 +27,7 @@ async def code(message: Message, state: FSMContext, session: AsyncSession):
         return
     
     if config.settings.status_mail == 1:
-        await message.answer("К сожалению я не смог распознать Вашу команду")
+        await message.answer("Неверный формат аккаунта. Попробуйте еще раз через /code")
         return    
     
     repo = UserRepository(session)
